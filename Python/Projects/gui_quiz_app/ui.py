@@ -48,20 +48,29 @@ class QuizInterface:
         """Method to get the next question from the quiz and update the UI."""
         question_text = self.quiz.next_question()
         self.canvas.itemconfig(self.question_text, text=question_text)
+        self.canvas.config(bg="white")  # Reset the canvas background color after feedback
 
     def true_pressed(self):
         """Method to handle the event when the 'True' button is pressed."""
-        self.quiz.check_answer("True")
-        self.get_next_question()
+        answer_correct = self.quiz.check_answer("True")
+        self.question_feedback(answer_correct)
         self.get_score()
 
     def false_pressed(self):
         """Method to handle the event when the 'False' button is pressed."""
-        self.quiz.check_answer("False")
-        self.get_next_question()
+        answer_correct = self.quiz.check_answer("False")
+        self.question_feedback(answer_correct)
         self.get_score()
 
     def get_score(self):
         """Method to get the current score from the quiz."""
         score_value = self.quiz.score
         self.score_label.config(text=f"Score = {score_value}")
+
+    def question_feedback(self, answer_correct):
+        """Method to provide feedback on the user's answer."""
+        if answer_correct:
+            self.canvas.config(bg="green")
+        else:
+            self.canvas.config(bg="red")
+        self.window.after(1000, self.get_next_question)
