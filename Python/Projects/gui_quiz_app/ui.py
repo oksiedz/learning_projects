@@ -32,14 +32,15 @@ class QuizInterface:
         self.false_img = PhotoImage(file="images/false.png")
 
         # Buttons (labels with images)        
-        self.true_button = Button(image=self.true_img, highlightthickness=0)
-        self.false_button = Button(image=self.false_img, highlightthickness=0)
+        self.true_button = Button(image=self.true_img, highlightthickness=0, command=self.true_pressed)
+        self.false_button = Button(image=self.false_img, highlightthickness=0, command=self.false_pressed)
 
         self.true_button.grid(row=2, column=0, padx=20)
         self.false_button.grid(row=2, column=1, padx=20)
 
         self.get_next_question()  # Load the first question
-
+        self.get_score()  # Update the score label
+    
         # end of loop
         self.window.mainloop()
 
@@ -47,3 +48,20 @@ class QuizInterface:
         """Method to get the next question from the quiz and update the UI."""
         question_text = self.quiz.next_question()
         self.canvas.itemconfig(self.question_text, text=question_text)
+
+    def true_pressed(self):
+        """Method to handle the event when the 'True' button is pressed."""
+        self.quiz.check_answer("True")
+        self.get_next_question()
+        self.get_score()
+
+    def false_pressed(self):
+        """Method to handle the event when the 'False' button is pressed."""
+        self.quiz.check_answer("False")
+        self.get_next_question()
+        self.get_score()
+
+    def get_score(self):
+        """Method to get the current score from the quiz."""
+        score_value = self.quiz.score
+        self.score_label.config(text=f"Score = {score_value}")
