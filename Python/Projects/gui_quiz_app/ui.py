@@ -15,23 +15,24 @@ class QuizInterface:
         # Canvas with text area
         self.canvas = Canvas(width=300, height=250, bg="white")
         self.canvas.create_text(
-            150,
-            125,
+            150, # half of width
+            125, # half of height
             text="Pytanie quizowe",
             font=("Arial", 20, "italic"),
+            fill=THEME_COLOR,
             width=280,
         )
-        self.canvas.grid(row=1, column=0, columnspan=2, pady=20)
+        self.canvas.grid(row=1, column=0, columnspan=2, pady=50)
 
         # Load images
         self.true_img = PhotoImage(file="images/true.png")
         self.false_img = PhotoImage(file="images/false.png")
 
-        # Buttons (labels with images)
-        self.true_label = Label(image=self.true_img, bg=THEME_COLOR)
-        self.false_label = Label(image=self.false_img, bg=THEME_COLOR)
+        # Buttons (labels with images)        
+        self.true_button = Button(image=self.true_img, highlightthickness=0)
+        self.false_button = Button(image=self.false_img, highlightthickness=0)
 
-        self.true_label.grid(row=2, column=0, padx=20)
-        self.false_label.grid(row=2, column=1, padx=20)
+        self.true_button.grid(row=2, column=0, padx=20)
+        self.false_button.grid(row=2, column=1, padx=20)
 
         self.window.mainloop()
