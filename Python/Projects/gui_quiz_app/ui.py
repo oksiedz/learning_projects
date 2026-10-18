@@ -1,0 +1,86 @@
+from tkinter import *
+
+from quiz_brain import QuizBrain
+
+THEME_COLOR = "#375362"
+
+class QuizInterface:
+    def __init__(self, quiz_brain: QuizBrain):
+        self.quiz = quiz_brain
+        self.window = Tk()
+        self.window.title("Quiz App")
+        self.window.config(padx=20, pady=20, bg=THEME_COLOR)
+
+        # Score label (top right)
+        self.score_label = Label(text="Score = 0", font=("Arial", 14, "bold"), fg="white", bg=THEME_COLOR)
+        self.score_label.grid(row=0, column=1, sticky="e")
+
+        # Canvas with text area
+        self.canvas = Canvas(width=300, height=250, bg="white")
+        self.question_text = self.canvas.create_text(
+            150, # half of width
+            125, # half of height
+            text="Pytanie quizowe",
+            font=("Arial", 20, "italic"),
+            fill=THEME_COLOR,
+            width=280,
+        )
+        self.canvas.grid(row=1, column=0, columnspan=2, pady=50)
+
+        # Load images
+        self.true_img = PhotoImage(file="images/true.png")
+        self.false_img = PhotoImage(file="images/false.png")
+
+        # Buttons (labels with images)        
+        self.true_button = Button(image=self.true_img, highlightthickness=0, command=self.true_pressed)
+        self.false_button = Button(image=self.false_img, highlightthickness=0, command=self.false_pressed)
+
+        self.true_button.grid(row=2, column=0, padx=20)
+        self.false_button.grid(row=2, column=1, padx=20)
+
+        self.get_next_question()  # Load the first question
+        self.get_score()  # Update the score label
+    
+        # end of loop
+        self.window.mainloop()
+
+    def get_next_question(self):
+        """Method to get the next question from the quiz and update the UI."""
+        self.reset_background()  # Reset the canvas background color after feedback
+        if self.quiz.still_has_questions():
+            question_text = self.quiz.next_question()
+            self.canvas.itemconfig(self.question_text, text=question_text)
+        else:
+            self.canvas.itemconfig(self.question_text, text="You've completed the quiz.")
+            self.true_button.config(state="disabled")
+            self.false_button.config(state="disabled")
+            
+
+    def true_pressed(self):
+        """Method to handle the event when the 'True' button is pressed."""
+        answer_correct = self.quiz.check_answer("True")
+        self.question_feedback(answer_correct)
+        self.get_score()
+
+    def false_pressed(self):
+        """Method to handle the event when the 'False' button is pressed."""
+        answer_correct = self.quiz.check_answer("False")
+        self.question_feedback(answer_correct)
+        self.get_score()
+
+    def get_score(self):
+        """Method to get the current score from the quiz."""
+        score_value = self.quiz.score
+        self.score_label.config(text=f"Score = {score_value}")
+
+    def question_feedback(self, answer_correct):
+        """Method to provide feedback on the user's answer."""
+        if answer_correct:
+            self.canvas.config(bg="green")
+        else:
+            self.canvas.config(bg="red")
+        self.window.after(1000, self.get_next_question)
+
+    def reset_background(self):
+        """Method to reset the canvas background color to white."""
+        self.canvas.config(bg="white")
