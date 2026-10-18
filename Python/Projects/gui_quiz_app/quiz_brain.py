@@ -14,7 +14,7 @@ class QuizBrain:
         self.question_number += 1
         # user_answer = input(f"Q.{self.question_number}: {self.current_question.text} (True/False): ")
         # self.check_answer(user_answer) # we will not have user answer
-        return f"Q.{self.question_number}: {self.current_question.text} (True/False): "
+        return f"Q.{self.question_number}: {self.current_question.text}: "
 
 
     def check_answer(self, user_answer):
