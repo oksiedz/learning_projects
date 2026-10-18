@@ -1,0 +1,41 @@
+Na nieposortowanym ci¹gu:
+
+1 sekunda:
+Selection Sort 1 500 obserwacji
+Insertion Sort 1 600 obserwacji
+Merge Sort 24 000 obserwacji
+
+5 minut:
+Selection Sort 25 000 obserwacji
+Insertion Sort 26 000 obserwacji
+Merge Sort 4 500 000 obserwacji
+
+Na posortowanym ASC ci¹gu:
+1 sekunda:
+Selection Sort 1 700 obserwacji
+Insertion Sort 500 000 obserwacji
+Merge Sort 24 000 obserwacji
+
+5 minut:
+Selection Sort 26 000 obserwacji
+Insertion Sort  obserwacji ==> dla 4 500 000 obserwacji 11 sekund
+Merge Sort 4 700 000  obserwacji
+
+Na posortowanym DESC ci¹gu:
+1 sekunda:
+Selection Sort 1 600 obserwacji
+Insertion Sort 1 300 obserwacji
+Merge Sort 24 000 obserwacji
+
+5 minut:
+Selection Sort 23 000 obserwacji
+Insertion Sort 20 000 obserwacji
+Merge Sort 4 700 000 obserwacji
+
+
+Bior¹c pod uwagê powy¿sze wyniki przyjêto, i¿ pomiary zostan¹ wykonane na wektorze 30 000 obserwacji podzielonych na 5 przezdzia³ów
+0 - 6000
+6001 - 12000
+12001 - 18000
+18001-24000
+24001-30000

@@ -1,0 +1,518 @@
+//https://github.com/oksiedz/wsm_paradygmaty
+
+#include <iostream>
+#include <string>
+#include <math.h>
+
+using namespace std;
+
+//szablon klasy typu typ
+template <class typ>
+class Stack
+{
+    typ *elements; //place for elements
+    int numofelements; //variable to contain the information regardoing amount of elements
+
+    //constructor of empty stack
+    public: Stack()
+    {
+        elements = NULL;
+        numofelements = 0;
+    }
+
+    //constructor of stack with some elements
+    Stack(int a)
+    {
+        elements = new typ[numofelements];
+        numofelements = a;
+    }
+
+    //destructor o
+    ~Stack()
+    {
+        delete [] elements;
+        //cout << "Object released" << endl;
+    }
+
+    //function adding the element to the top of the stack
+    void put(typ a)
+    {
+        typ *ntab = new typ[numofelements + 1];
+        for (int i = 0; i<numofelements; i++)
+        {
+            ntab[i]=elements[i];
+        };
+        ntab[numofelements] = a;
+        numofelements = numofelements + 1;
+        delete [] elements;
+        elements = ntab;
+    }
+
+    //function which is taking throwing the element from top of the stack
+    typ get()
+    {
+        typ result = elements[numofelements-1];
+        typ *ntab = new typ[numofelements - 1];
+        for (int i = 0; i<numofelements-1; i++)
+        {
+            ntab[i]=elements[i];
+        };
+
+        numofelements=numofelements - 1;
+        delete [] elements;
+        elements = ntab;
+        return result;
+    }
+
+    //function returning peak of stack
+    typ top()
+    {
+        return elements[numofelements-1];
+    }
+
+    //function checking if stack is empty or not
+    bool empty()
+    {
+        if (numofelements == 0) {return true;}
+        else
+        {
+            return false;
+        }
+    }
+
+    //function retuning the size of stack
+    int size()
+    {
+        return numofelements;
+    }
+
+    //function puting to console the elements in stack
+    void show()
+    {
+        cout<<"#";
+        for(int i=0;i<numofelements;i++)
+        {
+            cout<<" "<< elements[i]<<",";
+        }
+        cout<<endl;
+    }
+};
+
+//Function to return precedence of operators
+int prec(char c) {
+    if(c == '^')
+        return 3;
+    else if(c == '/' || c=='*')
+        return 2;
+    else if(c == '+' || c == '-')
+        return 1;
+    else
+        return -1;
+}
+
+//function checking if provided char is a number
+int isnumber(char a)
+{
+    if (a == '0' || a == '1' || a == '2' || a == '3' || a == '4' || a == '5' || a == '6' || a == '7' || a == '8' || a == '9')
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+//function checking if provided char i a bracket (left of right)
+int isbracket(char a)
+{
+    if (a == '(' || a == ')')
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+//function checking if provided char is an operator
+int isoperator (char a)
+{
+    if(a =='+' || a == '^' || a == '/' || a=='*'|| a == '+' || a == '-')
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+//function performing validation if the provided string is correct or not
+int incorrectstring(string a)
+{
+    int result = 0;
+    for (int i = 0; i < a.length(); i++)
+    {
+        if (
+            (a[i] == ' ' && a[i+1] == ' ') || (isoperator(a[i]) == 1 && isoperator(a[i+1]) == 1) || (isbracket(a[i]) == 1 && isbracket(a[i+1]) == 1)
+            || (isnumber(a[i]) == 1 && isoperator(a[i+1]) == 1) || (isoperator(a[i]) == 1 && isnumber(a[i+1]) == 1)
+            || (isnumber(a[i]) == 1 && isbracket(a[i+1]) == 1) || (isoperator(a[i]) == 1 && isbracket(a[i+1]) == 1)
+            )
+        {
+            result = 1;
+        }
+        else
+        {
+            result = result;
+        }
+    }
+    return result;
+}
+
+//function with prefix which is to be returned and concatenated in further functions
+string prefix()
+{
+    return "( 0 ";
+}
+
+//function with suffix which is to be returned and concatenated in further functions
+string suffix()
+{
+    return " )";
+}
+
+//function to handle negative numbers at the beginning of the provided string
+string checknegativeatbegining(string a)
+{
+    string outtext = "";
+    int i = 0;
+    while (i < a.length())
+    {
+        //- 2 
+        if(i == 0 && a[0] == '-' && isnumber(a[2]) == 1 && isnumber(a[3]) == 0)
+        {
+            outtext = outtext + prefix() + a[0] + ' ' + a[2] + suffix();
+            i = 3;
+        }
+        //- 22 
+        else if(i == 0 && a[0] == '-' && isnumber(a[2]) == 1 && isnumber(a[3]) == 1 && isnumber(a[4]) == 0)
+        {
+            outtext = outtext + prefix() + a[0] + ' ' + a[2] + a[3] + suffix();
+            i = 4;
+        }
+        //- 222
+        else if(i == 0 && a[0] == '-' && isnumber(a[2]) == 1 && isnumber(a[3]) == 1 && isnumber(a[4]) == 1 && isnumber(a[5]) == 0)
+        {
+            outtext = outtext + prefix() + a[0] + ' ' + a[2] + a[3] + a[4] + suffix();
+            i = 5;
+        }
+        //- 2222
+        else if(i == 0 && a[0] == '-' && isnumber(a[2]) == 1 && isnumber(a[3]) == 1 && isnumber(a[4]) == 1 && isnumber(a[5]) == 1 && isnumber(a[6]) == 0)
+        {
+            outtext = outtext + prefix() + a[0] + ' ' + a[2] + a[3] + a[4] + a[5] + suffix();
+            i = 6;
+        }
+        //- 22222
+        else if(i == 0 && a[0] == '-' && isnumber(a[2]) == 1 && isnumber(a[3]) == 1 && isnumber(a[4]) == 1 && isnumber(a[5]) == 1 && isnumber(a[6]) == 1 && isnumber(a[7]) == 0)
+        {
+            outtext = outtext + prefix() + a[0] + ' ' + a[2] + a[3] + a[4] + a[5] + a[6] + suffix();
+            i = 7;
+        }
+        else
+        {
+            outtext = outtext + a[i];
+            i = i + 1;
+        }
+    }
+
+    return outtext;
+}
+
+//function with prefix which is to be returned and concatenated in further functions
+string prefix2()
+{
+    return " ( 0 ";
+}
+
+//function to correctly handle negative values inside of the provided string
+string checknegativeinsideofstring(string a)
+{
+    string outstring = "";
+    int i = 0;
+    while (i < a.length())
+    {
+        //negative number after left bracket (so something like ( - 3 ))
+        if (a[i] == '(' && a[i+2] == '-' && isnumber(a[i+4]) == 1 && a[i + 5] == ' ')
+        {
+            outstring = outstring + a[i] + prefix2() + a[i+2] + a[i+3] + a[i+4] + a[i+5] + ')';
+            i = i + 5;
+        }
+        //( - 33 )
+        else if (a[i] == '(' && a[i+2] == '-' && isnumber(a[i+4]) == 1 && isnumber(a[i+5]) == 1 && a[i + 6] == ' ')
+        {
+            outstring = outstring + a[i] + prefix2() + a[i+2] + a[i+3] + a[i+4] + a[i+5] + a[i+6] + ')';
+            i = i + 6;
+        }
+        //( - 333 )
+        else if (a[i] == '(' && a[i+2] == '-' && isnumber(a[i+4]) == 1 && isnumber(a[i+5]) == 1 && isnumber(a[i + 6]) == 1 && a[i + 7] == ' ')
+        {
+            outstring = outstring + a[i] + prefix2() + a[i+2] + a[i+3] + a[i+4] + a[i+5] + a[i+6] + a[i+7] + ')';
+            i = i + 7;
+        }
+        //negative number after operator so something like * - 3
+        else if (isoperator(a[i]) == 1 && a[i+2] == '-' && isnumber(a[i+4]) == 1 && a[i+5] == ' ')
+        {
+            outstring = outstring + a[i] + prefix2() + a[i+2] + a[i+3] + a[i+4] + a[i+5] + ')';
+            i = i + 5;
+        }
+        else if (isoperator(a[i]) == 1 && a[i+2] == '-' && isnumber(a[i+4]) == 1 && (i+5 == a.length()))
+        {
+            outstring = outstring + a[i] + prefix2() + a[i+2] + a[i+3] + a[i+4] + ' ' + ')';
+            i = i + 5;
+        }
+        else if (isoperator(a[i]) == 1 && a[i+2] == '-' && isnumber(a[i+4]) == 1 && isnumber(a[i+5]) == 1 and a[i+6] == ' ')
+        {
+            outstring = outstring + a[i] + prefix2() + a[i+2] + a[i+3] + a[i+4] + a[i+5] + a[i+6] + ')';
+            i = i + 6;
+        }
+        else if (isoperator(a[i]) == 1 && a[i+2] == '-' && isnumber(a[i+4]) == 1 && isnumber(a[i+5]) == 1 && i+6 == a.length())
+        {
+            outstring = outstring + a[i] + prefix2() + a[i+2] + a[i+3] + a[i+4] + a[i+5] + ' ' + ')';
+            i = i + 6;
+        }
+        else if (isoperator(a[i]) == 1 && a[i+2] == '-' && isnumber(a[i+4]) == 1 && isnumber(a[i+5]) == 1 && isnumber(a[i+6]) == 1 and a[i+7] == ' ')
+        {
+            outstring = outstring + a[i] + prefix2() + a[i+2] + a[i+3] + a[i+4] + a[i+5] + a[i+6] + a[i+7] + ')';
+            i = i + 7;
+        }
+        else if (isoperator(a[i]) == 1 && a[i+2] == '-' && isnumber(a[i+4]) == 1 && isnumber(a[i+5]) == 1 && isnumber(a[i+6]) == 1 && i+7 == a.length())
+        {
+            outstring = outstring + a[i] + prefix2() + a[i+2] + a[i+3] + a[i+4] + a[i+5] + a[i+6] + ' ' + ')';
+            i = i + 7;
+        }
+        else 
+        {
+            outstring = outstring + a[i];
+            i = i + 1;
+        }
+    }
+
+    return outstring;
+}
+
+//function which adjusts the string to proper form required for RNP
+string stringbeautifier(string a)
+{
+    string outstring = "";
+    int i = 0;
+
+    while (i < a.length())
+    {
+        if (isnumber(a[i]) == 1 && isoperator(a[i+1]) == 1)
+        {
+            outstring = outstring + a[i] + ' ';
+            i = i + 1;
+        }
+        else if (isoperator(a[i]) == 1 && isoperator(a[i+1]) == 1)
+        {
+            outstring = outstring + a[i] + ' ';
+            i = i + 1;
+        }
+        else if (a[i] == ' ' && a[i+1] == ' ' && a[i+2] == ' ' && a[i+3] != ' ')
+        {
+            outstring = outstring + a[i];
+            i = i + 3;
+        }
+        else if (a[i] == ' ' && a[i+1] == ' ' && a[i+2] == ' ' && a[i+3] == ' ')
+        {
+            outstring = outstring + a[i];
+            i = i + 4;
+        }
+        else if (a[i] == ' ' && a[i+1] == ' ' && a[i+2] != ' ')
+        {
+            outstring = outstring + a[i];
+            i = i + 2;
+        }
+        else if(i == 0 && a[i] == ' ')
+        {
+            outstring == outstring;
+            i = i + 1;
+        }
+        else
+        {
+            outstring = outstring + a[i];
+            i = i + 1;
+        }
+    }
+
+    return outstring;
+}
+
+//function which modifies provided string from infix to postfix posture
+string infixToPostfix(string intextin)
+{
+    Stack<char> *wskStos = new Stack<char>(0);
+    string outtext = "";
+    string intext = checknegativeinsideofstring(checknegativeatbegining(intextin));
+
+    for (int i = 0; i < intext.length(); i++)
+    {
+        char c = intext[i];
+        if (c != ' ')
+        {
+            if(isnumber(c) == 1 && isnumber(intext[i+1]) == 0)
+            {
+                outtext = outtext + c;
+            }
+            if (isnumber(c) == 1 && isnumber(intext[i+1]) == 1 && isnumber(intext[i+2]) == 0)
+            {
+                outtext = outtext + c + intext[i+1];
+                i = i + 2;
+            }
+            if (isnumber(c) == 1 && isnumber(intext[i+1]) == 1 && isnumber(intext[i+2]) == 1)
+            {
+                outtext = outtext + c + intext[i+1] + intext[i+2];
+                i = i + 3;
+            }
+            if(c == '(')
+            {
+                wskStos -> put(c);
+            }
+            if(c == ')') 
+            {
+                while(wskStos -> top() != '(')
+                {
+                    outtext += wskStos -> top();
+                    wskStos -> get();
+                }
+                wskStos -> get();
+            }
+            if (isoperator(c) == 1) 
+            {
+                while(!wskStos -> empty() && prec(intext[i]) <= prec(wskStos -> top())) 
+                {
+                    outtext += wskStos -> top();
+                    wskStos -> get();
+                }
+                wskStos -> put(c);
+            }
+        }
+        if (c == ' ')
+        {
+            outtext =outtext + ' ';
+        }
+    }
+
+    while(!wskStos -> empty()) {
+        outtext += wskStos -> top();
+        wskStos -> get();
+    }
+    delete wskStos;
+    string outtext2 = stringbeautifier(outtext);
+
+    cout << "Input string presented in postfix notation:"<< outtext2 << "." << endl;
+    return outtext;
+}
+
+//function with calculation rules depending on the operator
+float calculation (float a, float b, char oper)
+{
+    switch(oper)
+    {
+        case '+': 
+            return a + b;
+        case '-': 
+            return a - b;
+        case '*': 
+            return a * b;
+        case '/': 
+            if (b != 0)
+            {
+                return a / b;
+            }
+            else
+            {
+                cout << "Division by zero error." << endl;
+                return 0;
+            }
+        case '^':
+            return pow(a, b);
+    }
+    cout<<"Incorrect operator error.";
+    return 0;
+}
+
+//modification of string of digits to number
+int str_to_int(string a, int &loc) 
+{
+    int number = 0;
+    while(loc < a.size() && isnumber(a[loc]) == 1)
+    {
+        //schemat Hornera
+        number = number * 10 + a[loc] - '0';
+        ++loc;
+    }
+    --loc;
+    return number;
+}
+
+//function which performs calculation of RPN from postfix notation
+void reversepolishnotation(string a)
+{
+    Stack<float> *wskStos = new Stack<float>(0);
+    float num1 = 0, num2 = 0;
+
+    for (int i = 0; i < a.size(); i++)
+    {
+        if(isnumber(a[i]) == 1)
+        {
+            wskStos -> put(str_to_int(a, i));
+        }
+        else
+        {
+            if (isoperator(a[i]) == 1)
+            {
+                if (wskStos -> size() < 2)
+                {
+                    cout << "Incorrect equation in Reverse Polish Notation." << endl;
+                }
+                num1 = wskStos -> top();
+                wskStos -> get();
+                num2 = wskStos -> top();
+                wskStos -> get();
+                wskStos -> put(calculation(num2, num1, a[i]));
+            }
+        }
+    }
+
+    if (wskStos -> size() != 1)
+    {
+        cout << "Incorrect equation in Reverse Polish Notation." << endl;
+    }
+
+    cout << "Output value from provided input string calculated with usage of infix to postfix transformation and reverse polish notation algorithm is equal: " << wskStos -> top() << "."<<endl;
+    delete wskStos;
+}
+
+int main() {
+
+    cout << "Please provide input string with equation that you would like to calculate." << endl;
+    cout << "Equation should be provided in such way that there is space between numbers, brackets, operators or signs."<< endl;
+    cout << "If string will be incorrect program will return an error and finish its work." << endl;
+    cout << "Please provide input:" << endl;
+    string input = "";
+    getline (cin, input);
+    
+    if(incorrectstring(input) == 0)
+    {
+        cout << "Inserted string:" << input <<"." << endl;
+        string exp2 = infixToPostfix(input);
+        reversepolishnotation(exp2);
+    }
+    else
+    {
+        cout << "Incorrect string. Please ensure that each symbol or number are separated with space." << endl;
+    }
+}

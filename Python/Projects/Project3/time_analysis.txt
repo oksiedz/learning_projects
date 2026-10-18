@@ -1,0 +1,49 @@
+1 Sek
+QuickSort 1 (random)
+losowy wektor
+	1 sekunda ==> 130000
+rosn¹cy wektor
+	1 sekunda ==> 130000
+malej¹cy wektor
+	1 sekunda ==> 130000
+
+QuickSort 2 (first element)
+losowy wektor
+	1 sekunda ==> 150000
+rosn¹cy wektor
+	1 sekunda ==> 4000
+malej¹cy wektor
+	1 sekunda ==> 2700
+
+QuickSort 3 (last element)
+losowy wektor
+	1 sekunda ==> 170000
+rosn¹cy wektor
+	1 sekunda ==> 2700
+malej¹cy wektor
+	1 sekunda ==> 3000
+
+5 min
+QuickSort 1 (random)
+losowy wektor
+	5 minut ==> 24000000
+rosn¹cy wektor
+	5 minut ==> 24500000
+malej¹cy wektor
+	5 minut ==> 24000000
+
+QuickSort 2 (first element)
+losowy wektor
+	5 minut ==> 26000000
+rosn¹cy wektor
+	5 minut ==> 66000
+malej¹cy wektor
+	5 minut ==> 50000
+
+QuickSort 3 (last element)
+losowy wektor
+	5 minut ==> 31000000
+rosn¹cy wektor
+	5 minut ==> 44000
+malej¹cy wektor
+	5 minut ==> 54000

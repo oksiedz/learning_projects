@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "offline-merge-tool"
+version = "0.1.0"
+description = "Offline tool for merging multiple PDFs and images into a single PDF"
+requires-python = ">=3.9"
+dependencies = [
+  "pypdf>=4.0.0",
+  "Pillow>=10.0.0",
+  "pillow-heif>=0.3.0",
+  "PySide6>=6.6,<7",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

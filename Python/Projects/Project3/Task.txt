@@ -1,0 +1,12 @@
+﻿Sortowanie -- zadanie 2
+Tym razem nadeszła pora aby eksperymentalnie zmierzyć sie z sortowaniem metodą QuickSort. Ponieważ zadanie jest bardzo podobne do poprzednich dwu, więc naszkicuje je w odrobinę bardziej kompaktowej formie. W razie pytań, proszę spróbować skorzystac z Forum / MS Teams.
+
+1. Zaimplementuj (i przetestuj implementację!) QuickSort.
+
+2. Znajdź w literaturze 3 różne metody wyznaczania elementu "pivot".
+
+3. Przetestuj -- tak jak w poprzednim zadaniu -- efektywność czasową QuickSortu dla każdego z trzech pivotów, dla danych losowych, posortowanych i odwrotnie posortowanych.
+
+4. Porównaj efektywność czasową z zachowaniem Merge Sortu'u i HeapSortu dla tych samych punktów pomiarowych i tych samych danych.
+
+Wyniki przedstaw w postaci rapotu technicznego.

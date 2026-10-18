@@ -1,0 +1,11 @@
+SET IDENTITY_INSERT [dbo].[usterka] ON 
+
+INSERT [dbo].[usterka] ([id], [id_awaria], [opis], [data_zgloszenia], [poczatek_naprawy], [koniec_naprawy], [urzadzenie_id], [status_id]) VALUES (1, 1, NULL, CAST(N'2022-12-01T00:00:00.000' AS DateTime), CAST(N'2022-12-01T00:00:00.000' AS DateTime), CAST(N'2022-12-10T00:00:00.000' AS DateTime), 1, 1)
+INSERT [dbo].[usterka] ([id], [id_awaria], [opis], [data_zgloszenia], [poczatek_naprawy], [koniec_naprawy], [urzadzenie_id], [status_id]) VALUES (4, 1, NULL, CAST(N'2022-12-02T00:00:00.000' AS DateTime), CAST(N'2022-12-02T00:00:00.000' AS DateTime), CAST(N'2022-12-08T00:00:00.000' AS DateTime), 1, 1)
+INSERT [dbo].[usterka] ([id], [id_awaria], [opis], [data_zgloszenia], [poczatek_naprawy], [koniec_naprawy], [urzadzenie_id], [status_id]) VALUES (5, 1, NULL, CAST(N'2022-12-02T00:00:00.000' AS DateTime), CAST(N'2022-12-02T00:00:00.000' AS DateTime), CAST(N'2022-12-12T23:59:59.000' AS DateTime), 1, 1)
+INSERT [dbo].[usterka] ([id], [id_awaria], [opis], [data_zgloszenia], [poczatek_naprawy], [koniec_naprawy], [urzadzenie_id], [status_id]) VALUES (6, 1, NULL, CAST(N'2022-12-14T00:00:00.000' AS DateTime), CAST(N'2022-12-14T00:00:00.000' AS DateTime), CAST(N'2022-12-15T00:00:00.000' AS DateTime), 1, 1)
+INSERT [dbo].[usterka] ([id], [id_awaria], [opis], [data_zgloszenia], [poczatek_naprawy], [koniec_naprawy], [urzadzenie_id], [status_id]) VALUES (7, 1, NULL, CAST(N'2022-12-15T00:00:00.000' AS DateTime), CAST(N'2022-12-15T00:00:00.000' AS DateTime), NULL, 1, 4)
+INSERT [dbo].[usterka] ([id], [id_awaria], [opis], [data_zgloszenia], [poczatek_naprawy], [koniec_naprawy], [urzadzenie_id], [status_id]) VALUES (9, 1, NULL, CAST(N'2022-11-01T00:00:00.000' AS DateTime), CAST(N'2022-11-01T00:00:00.000' AS DateTime), CAST(N'2022-11-05T00:00:00.000' AS DateTime), 1, 1)
+INSERT [dbo].[usterka] ([id], [id_awaria], [opis], [data_zgloszenia], [poczatek_naprawy], [koniec_naprawy], [urzadzenie_id], [status_id]) VALUES (11, 1, NULL, CAST(N'2022-12-16T00:00:00.000' AS DateTime), CAST(N'2022-12-16T00:00:00.000' AS DateTime), CAST(N'2022-12-17T00:00:00.000' AS DateTime), 1, 1)
+SET IDENTITY_INSERT [dbo].[usterka] OFF
+GO

@@ -1,0 +1,15 @@
+/****** Object:  Table [dbo].[element_typ]    Script Date: 21.01.2023 15:13:28 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[element_typ](
+	[id_typ] [int] IDENTITY(1,1) NOT NULL,
+	[typ_name] [nvarchar](255) NOT NULL,
+	[typ_time_min] [int] NOT NULL,
+ CONSTRAINT [PK_element_typ] PRIMARY KEY CLUSTERED 
+(
+	[id_typ] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO

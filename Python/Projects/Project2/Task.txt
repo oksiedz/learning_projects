@@ -1,0 +1,13 @@
+Sortowanie -- zadanie 1
+Na wykładzie rozważaliśmy 3 metody sortowania. Różnią się one od siebie złożonością. Jeden z nich ma zawsze złożoność O(n^2), drugi zawsze O(nlogn) a trzecia ma "skomplikowaną złożoność" -- od ONie do O(n^2).
+
+Celem zadania best sprawdzenie co takie złożoności oznaczaja w praktyce. Wynikiem prac ma być, oczywiście, raport techniczny (przygotowany samodzielnie a nie grupowo). Tak więc:
+1. Zaimplementuj (i przetestuj) wszystkie 3 metody sortowania.
+2. Wstępnie sprawdź "zachowanie czasowe" dla zaimplementowanego sortowania dla losowych danych -- znaczy, każdy element w nieposortowanym ciagu jest wynikiem wywołania generatora liczb losowych. Do eksperymentów wykorzystaj te same ciągi. Proponuję korzystać z liczb rzeczywistych w podwójnej precyzji (64 bitowych) -- w celu ogarnięcia czasu wykonania testów.
+Celem tego kroku jest stwierdzenie -- dla wszystkich 3 metod, ile elementów potrzebne jest aby czas wykonania sortowania wyniósł minimum 1 sekundę i maksimum 5 minut (mniej więcej).
+3. Sprawdź to samo dla danych posortowanych i danych odwrotnie posortowanych.
+4. Wybierz przedział (jeśli to tylko mozliwe) w którym zachowania wszystkich 3 algorytmów jest współ-mierzalne dla danych losowych. Przeprowadź testy dla pięciu punktów pomiarowych wewnątrze przedziału -- punkty równo-odległe -- 5 przebiegów każdego testu -- wykorzystaj te same dane.
+5. Przeprowadź testy (patrz punkt 4) dla danych posortowanych i odwrotnie posortowaych.
+UWAGA -- wszystkie eksperymenty trzeba uwzględnić w raporcie.
+6. Eksperymentalnie określ dla ilu danych nieposortowanych -- dodanych do posortowanych na końcu ciagu -- insertion sort jest szybszy niż merge sort.
+Wszystko należy opisać w raporcie technicznym.

@@ -1,0 +1,23 @@
+#define trigPin 12
+#define echoPin 11
+
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  long czas;
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  czas = pulseIn(echoPin, HIGH);
+  Serial.println(czas/58);
+  delay(500);
+}
