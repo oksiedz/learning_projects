@@ -1,6 +1,6 @@
 # Core dependencies
 streamlit
-google-genai
+openai
 python-dotenv
 
 # Development & testing

@@ -1,5 +1,4 @@
 import streamlit as st
-from google import genai
 import os
 import time
 import logging
@@ -21,15 +20,12 @@ logger = logging.getLogger(__name__)
 class AppConfig:
     """Configuration class for the Video Analyzer application."""
 
-    model_name: str = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+    model_name: str = os.getenv("OPENROUTER_MODEL", "anthropic/claude-3.5-sonnet")
     default_prompt: str = os.getenv(
-        "GEMINI_PROMPT", "Describe what is happening in this video in detail."
+        "OPENROUTER_PROMPT", "Describe what is happening in this video in detail."
     )
     max_video_size_mb: int = int(os.getenv("MAX_VIDEO_SIZE_MB", "100"))
     api_timeout: float = float(os.getenv("API_TIMEOUT", "30.0"))
-    file_processing_poll_interval: float = float(
-        os.getenv("FILE_PROCESSING_POLL_INTERVAL", "2.0")
-    )
     max_api_retries: int = int(os.getenv("MAX_API_RETRIES", "3"))
 
 
@@ -194,7 +190,7 @@ except ConfigurationError as e:
 
 st.set_page_config(page_title="Video Analyzer", page_icon="📹")
 
-st.title("📹 Video Analyzer with Gemini")
+st.title("📹 Video Analyzer with OpenRouter")
 
 # Display configuration status (development/debugging)
 if st.sidebar.checkbox("Show Debug Info", value=False):
@@ -203,69 +199,11 @@ if st.sidebar.checkbox("Show Debug Info", value=False):
         st.write(f"Max Video Size: {config.max_video_size_mb}MB")
         st.write(f"API Timeout: {config.api_timeout}s")
 
-if not os.getenv("GOOGLE_API_KEY"):
-    st.warning("Please set your GOOGLE_API_KEY in the .env file.")
+if not os.getenv("OPENROUTER_API_KEY"):
+    st.warning("Please set your OPENROUTER_API_KEY in the .env file.")
     st.stop()
 
-
-# Gemini API client configuration
-try:
-    # Initialize Google Gen AI client
-    client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
-
-    @st.cache_data
-    def get_available_models():
-        """Get available Gemini models for video analysis."""
-        try:
-            models = client.models.list()
-            video_models = [
-                model.name
-                for model in models
-                if "video" in model.supported_generation_methods
-            ]
-            return video_models
-        except Exception as e:
-            logger.error(f"Failed to get available models: {str(e)}")
-            return ["gemini-2.0-flash"]  # fallback
-
-    def upload_file(video_path: str):
-        """Upload video file to Gemini."""
-        try:
-            return client.files.upload_file(path=video_path)
-        except Exception as e:
-            logger.error(f"Video upload failed: {str(e)}")
-            raise VideoUploadError(f"Failed to upload video: {str(e)}")
-
-    def get_file(file_name: str):
-        """Get uploaded file status from Gemini."""
-        try:
-            return client.files.get(name=file_name)
-        except Exception as e:
-            logger.error(f"Failed to get file status: {str(e)}")
-            raise
-
-    def delete_file(file_name: str):
-        """Delete file from Gemini to save storage."""
-        try:
-            client.files.delete(name=file_name)
-        except Exception as e:
-            logger.warning(f"Failed to delete file from Gemini: {str(e)}")
-
-    def generate_content(prompt_parts, model_name="gemini-2.0-flash"):
-        """Generate content using Gemini."""
-        try:
-            model = genai.GenerativeModel(model_name=model_name)
-            response = model.generate_content(prompt_parts)
-            return response.text
-        except Exception as e:
-            logger.error(f"Content generation failed: {str(e)}")
-            raise APIGenerationError(f"Failed to generate content: {str(e)}")
-
-except Exception as e:
-    logger.error(f"Failed to initialize Gemini client: {str(e)}")
-    st.error(f"Application initialization failed: {str(e)}")
-    st.stop()
-
+st.write(f"Using model: **{config.model_name}**")
 
 uploaded_file = st.file_uploader(
     "Upload a video file",
@@ -286,16 +224,8 @@ if uploaded_file is not None:
 
     # Model selection (expandable)
     with st.expander("Advanced Options"):
-        available_models = get_available_models()
-        selected_model = st.selectbox(
-            "Gemini Model",
-            available_models,
-            index=(
-                available_models.index(config.model_name)
-                if config.model_name in available_models
-                else 0
-            ),
-        )
+        st.write(f"Current model: **{config.model_name}**")
+        st.caption("Change OPENROUTER_MODEL in .env to switch models")
 
         custom_prompt = st.text_area(
             "Custom Prompt",
@@ -315,52 +245,41 @@ if uploaded_file is not None:
     if st.button("Analyze Video"):
         with st.spinner("Processing video..."):
             try:
-                # Use selected model and prompt
-                model_name = selected_model
-                prompt = custom_prompt
-
                 with temp_video_file(uploaded_file) as video_path:
-                    st.info("Uploading video to Gemini...")
+                    st.info("Analyzing video...")
 
                     @with_retry(
                         config.max_api_retries, config.file_processing_poll_interval
                     )
-                    def upload_and_analyze():
-                        video_file = upload_file(video_path)
+                    def analyze_video():
+                        # OpenRouter API call using OpenAI-compatible client
+                        import openai
 
-                        # Wait for the file to be processed
-                        while video_file.state.name == "PROCESSING":
-                            time.sleep(config.file_processing_poll_interval)
-                            video_file = get_file(video_file.name)
-
-                        if video_file.state.name == "FAILED":
-                            raise VideoProcessingError(
-                                "Video processing failed on Gemini's side"
-                            )
-
-                        st.info(
-                            "Video uploaded successfully. Generating description..."
+                        client = openai.OpenAI(
+                            api_key=os.getenv("OPENROUTER_API_KEY"),
+                            base_url="https://openrouter.ai/api/v1",
                         )
 
-                        # Create the prompt
-                        full_prompt = (
-                            f"{prompt}\n\nPlease provide a detailed analysis "
-                            "of the video content."
+                        response = client.chat.completions.create(
+                            model=config.model_name,
+                            messages=[
+                                {
+                                    "role": "user",
+                                    "content": [
+                                        {"type": "text", "text": f"{custom_prompt}"},
+                                        {
+                                            "type": "input_text",
+                                            "text": "Please analyze this video content.",
+                                        },
+                                    ],
+                                }
+                            ],
                         )
 
-                        # Choose a model that supports video
-                        model = genai.GenerativeModel(model_name=selected_model)
-
-                        # Generate content with timeout
-                        response = model.generate_content(
-                            [video_file, full_prompt],
-                            generation_config={"timeout": config.api_timeout},
-                        )
-
-                        return response.text
+                        return response.choices[0].message.content
 
                     # Generate analysis
-                    analysis_result = upload_and_analyze()
+                    analysis_result = analyze_video()
 
                     st.subheader("Analysis Result:")
                     st.markdown(analysis_result)
@@ -372,10 +291,6 @@ if uploaded_file is not None:
                         file_name=f"video_analysis_{uploaded_file.name.split('.')[0]}.txt",
                         mime="text/plain",
                     )
-
-                    # Clean up: delete the file from Gemini to save storage/quota
-                    # Note: Uncomment if you want to delete the file
-                    # genai.delete_file(video_file.name) # Optional: delete after use
 
             except VideoAnalysisError:
                 # Already handled by decorator
