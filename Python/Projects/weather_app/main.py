@@ -9,6 +9,7 @@ PARAMS = {
     "lat": "52.2297",      # Latitude for Warsaw
     "lon": "21.0122",      # Longitude for Warsaw
     "appid": "5d16b03859e9a435449b4671a30af940",
+    "cnt": "4",           # Number of forecast items to return (first 4)
 }
 
 # Build the API request URL
@@ -24,7 +25,8 @@ try:
     response = urlopen(req, context=ctx)
     if response.status != 200:
         raise Exception(f"Request failed with status code: {response.status}")
-    data = json.loads(response.read().decode())
+    raw_data = response.read().decode()
+    data = json.loads(raw_data)
 
     # Save the data to a file
     with open("weather.json", "w", encoding="utf-8") as f:
@@ -32,6 +34,14 @@ try:
 
     print("\nData saved to weather.json")
     print(json.dumps(data, indent=2, ensure_ascii=False))
+
+    # Check weather conditions for the next 4 forecasts (next 12 hours)
+    condition_codes = [item["weather"][0]["id"] for item in data["list"]]
+    print("Condition codes:", condition_codes)
+
+    # Check if any condition code is less than 700 (rain/thunderstorm/drizzle)
+    if any(code < 700 for code in condition_codes):
+        print("Bring an Umbrella")
 
 except Exception as e:
     print("Error:", e)
