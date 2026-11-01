@@ -1,14 +1,17 @@
+import os
 import ssl
 import certifi
 from urllib.request import urlopen, Request
 import json
 
+
 # Constants
 BASE_URL = "https://api.openweathermap.org/data/2.5/forecast"
+APPID = os.getenv("OPENWEATHER_API_KEY")  # Use environment variable or default
 PARAMS = {
     "lat": "52.2297",      # Latitude for Warsaw
     "lon": "21.0122",      # Longitude for Warsaw
-    "appid": "5d16b03859e9a435449b4671a30af940",
+    "appid": APPID,
     "cnt": "4",           # Number of forecast items to return (first 4)
 }
 
