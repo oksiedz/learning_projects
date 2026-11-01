@@ -1,3 +1,15 @@
+# Core dependencies
 streamlit
-google-generativeai
+google-genai
 python-dotenv
+
+# Development & testing
+pytest
+pytest-cov
+black
+flake8
+mypy
+
+# Optional enhancements
+pandas
+plotly
