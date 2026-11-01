@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class AppConfig:
     """Configuration class for the Video Analyzer application."""
 
-    model_name: str = os.getenv("OPENROUTER_MODEL", "anthropic/claude-3.5-sonnet")
+    model_name: str = os.getenv("OPENROUTER_MODEL", "openrouter/free")
     default_prompt: str = os.getenv(
         "OPENROUTER_PROMPT", "Describe what is happening in this video in detail."
     )
