@@ -2,6 +2,7 @@
 streamlit
 openai
 python-dotenv
+google-genai
 
 # Development & testing
 pytest

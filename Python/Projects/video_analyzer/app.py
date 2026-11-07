@@ -20,13 +20,22 @@ logger = logging.getLogger(__name__)
 class AppConfig:
     """Configuration class for the Video Analyzer application."""
 
-    model_name: str = os.getenv("OPENROUTER_MODEL", "openrouter/free")
+    provider: str = os.getenv(
+        "AI_PROVIDER",
+        "gemini" if os.getenv("GEMINI_API_KEY") else "openrouter",
+    )
+    model_name: str = os.getenv(
+        "OPENROUTER_MODEL", "openrouter/free"
+    )
     default_prompt: str = os.getenv(
         "OPENROUTER_PROMPT", "Describe what is happening in this video in detail."
     )
     max_video_size_mb: int = int(os.getenv("MAX_VIDEO_SIZE_MB", "100"))
     api_timeout: float = float(os.getenv("API_TIMEOUT", "30.0"))
     max_api_retries: int = int(os.getenv("MAX_API_RETRIES", "3"))
+    file_processing_poll_interval: float = float(
+        os.getenv("FILE_PROCESSING_POLL_INTERVAL", "1.0")
+    )
 
 
 # Custom exception classes for better error handling
@@ -106,9 +115,10 @@ def temp_video_file(uploaded_file):
             file_size_mb = uploaded_file.tell() / (1024 * 1024)
             uploaded_file.seek(0)  # Seek back to start
 
-            if file_size_mb > 100:  # Using config value
+            if file_size_mb > config.max_video_size_mb:
                 raise VideoUploadError(
-                    f"Video file too large: {file_size_mb:.2f}MB (max 100MB)"
+                    f"Video file too large: {file_size_mb:.2f}MB "
+                    f"(max {config.max_video_size_mb}MB)"
                 )
 
             tfile.write(uploaded_file.read())
@@ -160,17 +170,91 @@ def with_retry(max_retries: int, delay: float):
 
 def validate_config(config: AppConfig) -> None:
     """Validate application configuration."""
-    if not config.model_name:
+    if config.provider not in ("openrouter", "gemini"):
+        raise ConfigurationError(
+            f"Provider must be 'openrouter' or 'gemini', got: {config.provider}"
+        )
+    if config.provider == "openrouter" and not config.model_name:
         raise ConfigurationError("Model name cannot be empty")
-
     if not config.default_prompt:
         raise ConfigurationError("Default prompt cannot be empty")
-
     if config.max_video_size_mb <= 0:
         raise ConfigurationError("Max video size must be positive")
-
     if config.api_timeout <= 0:
         raise ConfigurationError("API timeout must be positive")
+
+
+def _analyze_with_openrouter(uploaded_file, custom_prompt, config):
+    """Analyze video using OpenRouter API."""
+    import base64
+    import openai
+
+    client = openai.OpenAI(
+        api_key=os.getenv("OPENROUTER_API_KEY"),
+        base_url="https://openrouter.ai/api/v1",
+    )
+
+    # Read the uploaded video and encode it as base64
+    uploaded_file.seek(0)
+    video_bytes = uploaded_file.read()
+    video_b64 = base64.b64encode(video_bytes).decode("utf-8")
+    mime_type = uploaded_file.type or "video/mp4"
+
+    response = client.chat.completions.create(
+        model=config.model_name,
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": f"{custom_prompt}"},
+                    {
+                        "type": "video_url",
+                        "video_url": {
+                            "url": f"data:{mime_type};base64,{video_b64}"
+                        },
+                    },
+                ],
+            }
+        ],
+    )
+
+    return response.choices[0].message.content
+
+
+def _analyze_with_gemini(uploaded_file, custom_prompt, config):
+    """Analyze video using Google Gemini API."""
+    import base64
+    import mimetypes
+    import time
+
+    from google.genai import types as genai_types
+    from google import genai
+
+    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+    model_name = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+
+    # Read the uploaded video
+    uploaded_file.seek(0)
+    video_bytes = uploaded_file.read()
+    mime_type = (
+        uploaded_file.type
+        or mimetypes.guess_type(uploaded_file.name)[0]
+        or "video/mp4"
+    )
+
+    # Upload the video file to Gemini
+    video_part = genai_types.Part.from_bytes(
+        data=video_bytes,
+        mime_type=mime_type,
+    )
+
+    response = client.models.generate_content(
+        model=model_name,
+        contents=[custom_prompt, video_part],
+    )
+
+    return response.text
 
 
 # Load environment variables and configuration
@@ -190,20 +274,35 @@ except ConfigurationError as e:
 
 st.set_page_config(page_title="Video Analyzer", page_icon="📹")
 
-st.title("📹 Video Analyzer with OpenRouter")
+st.title("📹 Video Analyzer")
 
 # Display configuration status (development/debugging)
 if st.sidebar.checkbox("Show Debug Info", value=False):
     with st.sidebar.expander("Configuration Details"):
-        st.write(f"Model: {config.model_name}")
+        st.write(f"Provider: {config.provider}")
+        if config.provider == "gemini":
+            st.write(f"Model: {os.getenv('GEMINI_MODEL', 'gemini-3.8-flash')}")
+        else:
+            st.write(f"Model: {config.model_name}")
         st.write(f"Max Video Size: {config.max_video_size_mb}MB")
         st.write(f"API Timeout: {config.api_timeout}s")
 
-if not os.getenv("OPENROUTER_API_KEY"):
-    st.warning("Please set your OPENROUTER_API_KEY in the .env file.")
-    st.stop()
+# Check required API key based on provider
+if config.provider == "gemini":
+    if not os.getenv("GEMINI_API_KEY"):
+        st.warning("Please set your GEMINI_API_KEY in the .env file.")
+        st.stop()
+else:
+    if not os.getenv("OPENROUTER_API_KEY"):
+        st.warning("Please set your OPENROUTER_API_KEY in the .env file.")
+        st.stop()
 
-st.write(f"Using model: **{config.model_name}**")
+st.write(f"Using provider: **{config.provider}**")
+if config.provider == "gemini":
+    gemini_model = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+    st.write(f"Using model: **{gemini_model}**")
+else:
+    st.write(f"Using model: **{config.model_name}**")
 
 uploaded_file = st.file_uploader(
     "Upload a video file",
@@ -224,8 +323,14 @@ if uploaded_file is not None:
 
     # Model selection (expandable)
     with st.expander("Advanced Options"):
-        st.write(f"Current model: **{config.model_name}**")
-        st.caption("Change OPENROUTER_MODEL in .env to switch models")
+        st.write(f"Provider: **{config.provider}**")
+        if config.provider == "gemini":
+            st.write(f"Model: **{os.getenv('GEMINI_MODEL', 'gemini-3.8-flash')}**")
+        else:
+            st.write(f"Model: **{config.model_name}**")
+        st.caption(
+            "Change AI_PROVIDER, OPENROUTER_MODEL, or GEMINI_MODEL in .env to switch"
+        )
 
         custom_prompt = st.text_area(
             "Custom Prompt",
@@ -252,31 +357,13 @@ if uploaded_file is not None:
                         config.max_api_retries, config.file_processing_poll_interval
                     )
                     def analyze_video():
-                        # OpenRouter API call using OpenAI-compatible client
-                        import openai
-
-                        client = openai.OpenAI(
-                            api_key=os.getenv("OPENROUTER_API_KEY"),
-                            base_url="https://openrouter.ai/api/v1",
+                        if config.provider == "gemini":
+                            return _analyze_with_gemini(
+                                uploaded_file, custom_prompt, config
+                            )
+                        return _analyze_with_openrouter(
+                            uploaded_file, custom_prompt, config
                         )
-
-                        response = client.chat.completions.create(
-                            model=config.model_name,
-                            messages=[
-                                {
-                                    "role": "user",
-                                    "content": [
-                                        {"type": "text", "text": f"{custom_prompt}"},
-                                        {
-                                            "type": "input_text",
-                                            "text": "Please analyze this video content.",
-                                        },
-                                    ],
-                                }
-                            ],
-                        )
-
-                        return response.choices[0].message.content
 
                     # Generate analysis
                     analysis_result = analyze_video()
