@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import time
 import logging
+import threading
 from dotenv import load_dotenv
 import tempfile
 from contextlib import contextmanager
@@ -118,7 +119,8 @@ def temp_video_file(uploaded_file):
             if file_size_mb > config.max_video_size_mb:
                 raise VideoUploadError(
                     f"Video file too large: {file_size_mb:.2f}MB "
-                    f"(max {config.max_video_size_mb}MB)"
+                    f"(max {config.max_video_size_mb}MB for upload; "
+                    f"API request limit after base64 encoding is ~20MB)"
                 )
 
             tfile.write(uploaded_file.read())
@@ -138,6 +140,14 @@ def temp_video_file(uploaded_file):
 # API retry logic
 
 
+def _is_quota_error(exception: Exception) -> bool:
+    """Return True if the exception is a quota/rate-limit error that won't
+    be resolved by retrying immediately (e.g. daily free-tier limit)."""
+
+    message = str(exception).upper()
+    return "RESOURCE_EXHAUSTED" in message or "QUOTA" in message
+
+
 def with_retry(max_retries: int, delay: float):
     """Decorator to retry API calls with exponential backoff."""
 
@@ -150,6 +160,15 @@ def with_retry(max_retries: int, delay: float):
                     return func(*args, **kwargs)
                 except Exception as e:
                     last_exception = e
+                    if _is_quota_error(e):
+                        # Quota/rate-limit errors won't be fixed by retrying
+                        # immediately (the API may report a multi-hour delay),
+                        # so fail fast instead of burning retries.
+                        logger.error(
+                            f"Quota/rate-limit error on attempt "
+                            f"{attempt + 1}: {str(e)}"
+                        )
+                        raise
                     if attempt < max_retries:
                         logger.warning(
                             f"Attempt {attempt + 1} failed, retrying in "
@@ -225,7 +244,7 @@ def _analyze_with_gemini(uploaded_file, custom_prompt, config):
     """Analyze video using Google Gemini API."""
     import base64
     import mimetypes
-    import time
+    import os
 
     from google.genai import types as genai_types
     from google import genai
@@ -237,11 +256,20 @@ def _analyze_with_gemini(uploaded_file, custom_prompt, config):
     # Read the uploaded video
     uploaded_file.seek(0)
     video_bytes = uploaded_file.read()
-    mime_type = (
-        uploaded_file.type
-        or mimetypes.guess_type(uploaded_file.name)[0]
-        or "video/mp4"
-    )
+
+    # Determine mime type from the uploaded file
+    mime_type = uploaded_file.type
+    if not mime_type:
+        # Try to detect based on file extension if type not provided
+        mime_type = mimetypes.guess_type(uploaded_file.name)[0]
+
+    # Ensure we have a valid video mime type
+    if mime_type and not mime_type.startswith("video/"):
+        mime_type = None
+
+    if not mime_type:
+        # Fallback to mp4 if we can't determine the type
+        mime_type = "video/mp4"
 
     # Upload the video file to Gemini
     video_part = genai_types.Part.from_bytes(
@@ -306,7 +334,7 @@ else:
 
 uploaded_file = st.file_uploader(
     "Upload a video file",
-    type=["mp4", "mov", "avi", "mkv"],
+    type=["mp4", "mov", "avi", "mkv", "ogv"],
     help=f"Maximum file size: {config.max_video_size_mb}MB",
 )
 
@@ -371,8 +399,8 @@ if uploaded_file is not None:
                         uploaded_file, custom_prompt, config
                     )
 
-                # Stage 2: analysis in progress (single blocking API call)
-                status_text.text("Sending video to AI provider...")
+                # Stage 2: analysis in progress (blocking API call)
+                status_text.text("Analyzing video with AI provider...")
                 progress_bar.progress(50)
 
                 # Generate analysis
