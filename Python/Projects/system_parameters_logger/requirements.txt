@@ -1,0 +1,23 @@
+# System Parameters Logger
+# Dependencies required to run the system monitoring tool
+
+# Core system monitoring
+psutil>=5.9.0
+
+# Optional: Windows Event Log integration (Windows only)
+# pywin32>=306
+
+# Optional: requests library for simpler HTTP (stdlib urllib is used by default)
+# requests>=2.28.0
+
+# Additional dependencies for Windows compatibility
+# These are automatically included with Python on most systems,
+# but listed here for completeness.
+
+# Note: This project uses only standard library modules for most functionality:
+# - os, sys, time, json, logging, subprocess, threading
+# - pathlib, datetime, typing, platform, socket
+# - psutil (third-party)
+
+# No additional dependencies are required for basic functionality.
+# The tool should work out of the box with Python 3.8+ on Windows, Linux, or macOS.

@@ -1,0 +1,70 @@
+{
+    "monitoring": {
+        "cpu_check_interval": 60,
+        "memory_check_interval": 60,
+        "disk_check_interval": 300,
+        "network_check_interval": 30,
+        "process_check_interval": 120,
+        "log_retention_days": 30,
+        "max_log_size_mb": 100
+    },
+    "alerts": {
+        "cpu_threshold": 90,
+        "memory_threshold": 85,
+        "disk_threshold": 90,
+        "ping_threshold": 1000,
+        "process_restart_threshold": 300
+    },
+    "network": {
+        "ping_targets": [
+            "8.8.8.8",
+            "1.1.1.1",
+            "google.com",
+            "cloudflare.com"
+        ],
+        "dns_servers": [
+            "8.8.8.8",
+            "1.1.1.1",
+            "208.67.222.222"
+        ],
+        "connection_timeout": 10
+    },
+    "applications": [
+        {
+            "name": "Immich Server",
+            "process_name": "immich",
+            "check_interval": 60,
+            "critical": True,
+            "restart_if_down": True
+        },
+        {
+            "name": "File System",
+            "path": "C:/",
+            "check_interval": 300,
+            "critical": True
+        }
+    ],
+    "logging": {
+        "level": "INFO",
+        "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        "console_output": true,
+        "file_output": true,
+        "log_file": "system_monitor.log"
+    },
+    "remote_upload": {
+        "enabled": false,
+        "github_token": "",
+        "github_repo": "",
+        "webhook_url": "",
+        "network_share_path": ""
+    },
+    "immich": {
+        "host": "localhost",
+        "port": 2283,
+        "upload_path": null,
+        "check_endpoints": [
+            "/api/server/status",
+            "/api/server/info"
+        ]
+    }
+}
