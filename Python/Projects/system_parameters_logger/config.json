@@ -50,5 +50,21 @@
         "console_output": true,
         "file_output": true,
         "log_file": "system_monitor.log"
+    },
+    "remote_upload": {
+        "enabled": false,
+        "github_token": "",
+        "github_repo": "",
+        "webhook_url": "",
+        "network_share_path": ""
+    },
+    "immich": {
+        "host": "localhost",
+        "port": 2283,
+        "upload_path": null,
+        "check_endpoints": [
+            "/api/server/status",
+            "/api/server/info"
+        ]
     }
 }

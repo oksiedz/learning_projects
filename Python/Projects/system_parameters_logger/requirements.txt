@@ -4,6 +4,12 @@
 # Core system monitoring
 psutil>=5.9.0
 
+# Optional: Windows Event Log integration (Windows only)
+# pywin32>=306
+
+# Optional: requests library for simpler HTTP (stdlib urllib is used by default)
+# requests>=2.28.0
+
 # Additional dependencies for Windows compatibility
 # These are automatically included with Python on most systems,
 # but listed here for completeness.
