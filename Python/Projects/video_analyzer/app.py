@@ -348,40 +348,58 @@ if uploaded_file is not None:
         )
 
     if st.button("Analyze Video"):
-        with st.spinner("Processing video..."):
-            try:
-                with temp_video_file(uploaded_file) as video_path:
-                    st.info("Analyzing video...")
+        try:
+            progress_bar = st.progress(0)
+            status_text = st.empty()
 
-                    @with_retry(
-                        config.max_api_retries, config.file_processing_poll_interval
-                    )
-                    def analyze_video():
-                        if config.provider == "gemini":
-                            return _analyze_with_gemini(
-                                uploaded_file, custom_prompt, config
-                            )
-                        return _analyze_with_openrouter(
+            with temp_video_file(uploaded_file) as video_path:
+                # Stage 1: preparing the video
+                status_text.text("Preparing video for analysis...")
+                progress_bar.progress(15)
+
+                st.info("Analyzing video...")
+
+                @with_retry(
+                    config.max_api_retries, config.file_processing_poll_interval
+                )
+                def analyze_video():
+                    if config.provider == "gemini":
+                        return _analyze_with_gemini(
                             uploaded_file, custom_prompt, config
                         )
-
-                    # Generate analysis
-                    analysis_result = analyze_video()
-
-                    st.subheader("Analysis Result:")
-                    st.markdown(analysis_result)
-
-                    # Add download option
-                    st.download_button(
-                        label="Download Analysis",
-                        data=analysis_result,
-                        file_name=f"video_analysis_{uploaded_file.name.split('.')[0]}.txt",
-                        mime="text/plain",
+                    return _analyze_with_openrouter(
+                        uploaded_file, custom_prompt, config
                     )
 
-            except VideoAnalysisError:
-                # Already handled by decorator
-                pass
-            except Exception as e:
-                logger.error(f"Unexpected error during analysis: {str(e)}")
-                st.error(f"An unexpected error occurred during analysis: {str(e)}")
+                # Stage 2: analysis in progress (single blocking API call)
+                status_text.text("Sending video to AI provider...")
+                progress_bar.progress(50)
+
+                # Generate analysis
+                analysis_result = analyze_video()
+
+                # Stage 3: complete
+                status_text.text("Analysis complete!")
+                progress_bar.progress(100)
+
+                st.subheader("Analysis Result:")
+                st.markdown(analysis_result)
+
+                # Add download option
+                st.download_button(
+                    label="Download Analysis",
+                    data=analysis_result,
+                    file_name=f"video_analysis_{uploaded_file.name.split('.')[0]}.txt",
+                    mime="text/plain",
+                )
+
+        except VideoAnalysisError:
+            # Already handled by decorator
+            progress_bar.empty()
+            status_text.empty()
+            pass
+        except Exception as e:
+            logger.error(f"Unexpected error during analysis: {str(e)}")
+            st.error(f"An unexpected error occurred during analysis: {str(e)}")
+            progress_bar.empty()
+            status_text.empty()
